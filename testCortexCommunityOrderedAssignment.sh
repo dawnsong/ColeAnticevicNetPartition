@@ -38,19 +38,22 @@ verbose=${VERBOSE:-0} ;  test 0 -ne $verbose && set -x
 #https://github.com/ColeLab/ColeAnticevicNetPartition
 #cortex_community_order.mat - The order the Glasser parcels should be in to reveal the community structure identified by this network partition, in MATLAB format. Note that this file assumes you have the left hemisphere Glasser parcellation regions first, followed by the right hemisphere regions.
 #cortex_community_order.txt - Same as the previous file, but in text format.
-awk -v reorder=./cortex_community_order.txt '
+awk -v reorder=./cortex_community_order.txt  -v OFS=, '
 BEGIN{
     freorder=reorder;
     n=0;
     while((getline < freorder)>0){
-        nodeOrder[n++]=$1
+        nodeOrder[n++]=0+ $1 ; #n -> $1 
     }
-    close(freorder)
+    close(freorder);
 }
-{nodeAssignment[$NR]=$1}
+{
+    nodeAssignment[FNR-1]=0+ $1; 
+} #n -> $1
 END{
-    for(n=0;n<360;i++){
-
+    for(n=0;n<360;n++){
+        print n+1, nodeOrder[n], nodeAssignment[n], nodeAssignment[nodeOrder[n]-1];
+        #print n, nodeAssignment[nodeOrder[n]];
     }
 }
 ' cortex_parcel_network_assignments.txt
